@@ -4,27 +4,32 @@ import (
     "math/rand"
     "net/http"
     "text/template"
-    "time"
 
     "SnowBall/dofus"
 )
 
-var common = `
-
-Si non vous avez tester XXX ? https://example.com`
-
 type FormData struct {
     Base    string
     Thread  string
+    Post    string
     Message string
-    Common  string
 }
 
 func Form(w http.ResponseWriter, r *http.Request) {
     var err error
-    var forum, thread, message string
+    var forum, thread string
 
-    rand.Seed(time.Now().Unix())
+    messages, err := dofus.GetMessages()
+
+    if err != nil {
+        panic(err)
+    }
+
+    if len(messages) <= 0 {
+        panic("no message available")
+    }
+
+    message := messages[rand.Intn(len(messages))]
 
     for retry := 3; retry > 0; retry-- {
         forums, err := dofus.GetForums()
@@ -53,25 +58,26 @@ func Form(w http.ResponseWriter, r *http.Request) {
         thread = threads[rand.Intn(len(threads))]
         //log.Print(thread)
 
-        messages, err := dofus.GetMessages(thread)
+        /*posts, err := dofus.GetPosts(thread)
 
         if err != nil {
             panic(err)
         }
 
-        if len(messages) <= 0 {
+        if len(posts) <= 0 {
             continue
         }
 
-        message = messages[rand.Intn(len(messages))]
-        //log.Print(message)
+        post = posts[rand.Intn(len(posts))]
+        //log.Print(posts)*/
 
         break
     }
 
-    if len(message) <= 0 {
-        panic("no message after 3 retry")
-    }
+    /*if len(post) <= 0 {
+        log.Print("no posts after 3 retry")
+        return
+    }*/
 
     tmpl, err := template.ParseFiles("./public/post.html")
 
@@ -82,10 +88,10 @@ func Form(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "text/html")
 
     err = tmpl.ExecuteTemplate(w, "post.html", FormData{
-        Base:    dofus.Base,
-        Thread:  thread,
+        Base:   dofus.Base,
+        Thread: thread,
+        //Post:    post,
         Message: message,
-        Common:  common,
     })
 
     if err != nil {

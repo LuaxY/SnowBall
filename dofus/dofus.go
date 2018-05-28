@@ -1,9 +1,11 @@
 package dofus
 
 import (
+    "bufio"
     "fmt"
     "html"
     "net/http"
+    "os"
     "strings"
 
     "github.com/PuerkitoBio/goquery"
@@ -11,6 +13,23 @@ import (
 )
 
 var Base = "https://www.dofus.com"
+
+func GetMessages() ([]string, error) {
+    file, _ := os.Open("./messages.txt")
+
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    scanner.Split(bufio.ScanLines)
+
+    var messages []string
+
+    for scanner.Scan() {
+        messages = append(messages, scanner.Text())
+    }
+
+    return messages, nil
+}
 
 func GetForums() ([]string, error) {
     res, err := http.Get(fmt.Sprintf("%s%s", Base, "/fr/forum"))
@@ -92,7 +111,7 @@ func GetThreads(forum string) ([]string, error) {
     return threads, nil
 }
 
-func GetMessages(thread string) ([]string, error) {
+func GetPosts(thread string) ([]string, error) {
     res, err := http.Get(fmt.Sprintf("%s%s", Base, thread))
 
     if err != nil {
@@ -111,7 +130,7 @@ func GetMessages(thread string) ([]string, error) {
         return nil, err
     }
 
-    var messages []string
+    var posts []string
 
     doc.Find(".ak-text").Each(func(i int, s *goquery.Selection) {
         text, _ := s.Find("html body p").Html()
@@ -126,13 +145,13 @@ func GetMessages(thread string) ([]string, error) {
             return
         }
 
-        if len(text) < 20 || len(text) > 100 {
+        if len(text) < 5 || len(text) > 500 {
             return
         }
 
-        messages = append(messages, text)
+        posts = append(posts, text)
     })
 
-    return messages, nil
+    return posts, nil
 }
 
