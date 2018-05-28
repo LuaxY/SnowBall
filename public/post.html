@@ -1,0 +1,6 @@
+<form method="post" id="comment" action="{{.Base}}{{.Thread}}">
+    <input type="hidden" name="postback" value="forum_add_comment">
+    <input type="hidden" name="topic_title" value="">
+    <input type="hidden" name="user" value="0">
+    <textarea name="comment" style="margin:0;height:0;width:0;border:none">{{.Message}}{{.Common}}"</textarea>
+</form>
