@@ -5,6 +5,9 @@ import (
     "fmt"
     "net/http"
     "os"
+    "time"
+
+    "github.com/dustin/go-humanize"
 )
 
 type Game struct {
@@ -90,5 +93,6 @@ func (p *Player) String() string {
     default:
         serverName = fmt.Sprintf("Unknown (%d)", p.ServerId)
     }
-    return fmt.Sprintf("%s|%.30s|%d|%d\r\n", serverName, p.Name, p.Level, p.Kamas)
+
+    return fmt.Sprintf("%.19s | %13s | %20.20s | %4d | %13s\r\n", time.Now(), serverName, p.Name, p.Level, humanize.Comma(int64(p.Kamas)))
 }
